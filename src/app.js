@@ -12,7 +12,7 @@ app.use("/uploads", express.static(path.join(__dirname, "../uploads")));
 
 // Routes
 app.use("/api/auth", require("./api/auth/authRoutes"));
-// app.use('/api/users', require('./api/users/user.routes'));
+app.use("/api/users", require("./api/users/userRoutes"));
 
 app.get("/", (req, res) => {
 	res.send("API is running...");

@@ -41,7 +41,8 @@ class authController {
 			// success response
 			return res.status(201).json({
 				status: "success",
-				message: "User registered successfully",
+				message:
+					"User registered successfully. Please check your email to verify your account.",
 				data: {
 					user: {
 						id: result.user.id,
@@ -105,9 +106,53 @@ class authController {
 				});
 			}
 
+			if (error.message === "Please verify your email before logging in") {
+				return res.status(403).json({
+					status: "error",
+					message: "Please verify your email before logging in",
+				});
+			}
+
 			return res.status(500).json({
 				status: "error",
 				message: "An error occurred during login",
+			});
+		}
+	}
+
+	static async verifyEmail(req, res) {
+		try {
+			const { token } = req.params;
+
+			if (!token) {
+				return res.status(400).json({
+					status: "error",
+					message: "Verification token is required",
+				});
+			}
+
+			const user = await authService.verifyEmail(token);
+
+			return res.status(200).json({
+				status: "success",
+				message: "Email verified successfully",
+				data: {
+					user,
+				},
+			});
+		} catch (error) {
+			console.error("Email verification error:", error);
+
+			if (error.message === "Invalid verification token") {
+				return res.status(400).json({
+					status: "error",
+					message: "Invalid verification token",
+				});
+			}
+
+			return res.status(500).json({
+				status: "error",
+				message: "An error occurred during email verification",
 			});
 		}
 	}

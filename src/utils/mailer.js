@@ -1,40 +1,94 @@
 const nodemailer = require("nodemailer");
-const mailConfig = require("../config/mail");
+const db = require("../config/database");
+require("dotenv").config();
 
-const transporter = nodemailer.createTransport(mailConfig);
-const sendVerificationEmail = async (email, name, token) => {
-	const verificationUrl = `${process.env.APP_URL}/api/auth/verify-email/${token}`;
+async function sendVerificationEmail(email, name, token) {
+	const transporter = nodemailer.createTransport({
+		service: "gmail",
+		auth: {
+			user: process.env.GOOGLE_APP_EMAIL,
+			pass: process.env.GOOGLE_APP_PASSWORD,
+		},
+		tls: { rejectUnauthorized: false },
+		connectionTimeout: 10000,
+	});
+
+	const verificationUrl = `${process.env.BASE_URL}/verify-email?token=${token}`;
+
 	const mailOptions = {
-		from: process.env.MAIL_FROM || '"Movie App" <no-reply@movieapp.com>',
+		from: `"No Reply" <${process.env.GOOGLE_APP_EMAIL}>`,
 		to: email,
-		subject: "Please verify your email address",
+		subject: "Verify Your Email Address",
 		html: `
-      <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
-        <h2>Hello ${name}!</h2>
-        <p>Thank you for registering with our Movie App. Please verify your email address by clicking the button below:</p>
-        <div style="text-align: center; margin: 30px 0;">
-          <a href="${verificationUrl}" style="background-color: #4CAF50; color: white; padding: 12px 20px; text-decoration: none; border-radius: 4px; font-weight: bold;">
-            Verify Email
-          </a>
-        </div>
-        <p>Alternatively, you can copy and paste the following link in your browser:</p>
-        <p>${verificationUrl}</p>
-        <p>If you did not create an account, please ignore this email.</p>
-        <p>Thanks,<br>The Movie App Team</p>
-      </div>
-    `,
+            <html>
+            <head>
+                <style>
+                    .button {
+                        display: inline-block;
+                        padding: 12px 24px;
+                        background-color: #4CAF50;
+                        color: white;
+                        text-decoration: none;
+                        border-radius: 5px;
+                        font-weight: bold;
+                        margin: 15px 0;
+                    }
+                    .container {
+                        font-family: Arial, sans-serif;
+                        line-height: 1.6;
+                        max-width: 600px;
+                        margin: 0 auto;
+                        padding: 20px;
+                    }
+                </style>
+            </head>
+            <body>
+                <div class="container">
+                    <h2>Email Verification</h2>
+                    <p>Hello ${name},</p>
+                    <p>Thank you for registering! Please click the button below to verify your email address:</p>
+                    <a href="${verificationUrl}" class="button">Verify Email</a>
+                    <p>If you didn't create an account, you can safely ignore this email.</p>
+                    <p>Best regards,<br>Your Application Team</p>
+                </div>
+            </body>
+            </html>`,
+		text: `Please verify your email by clicking this link: ${verificationUrl}`,
 	};
 
 	try {
 		const info = await transporter.sendMail(mailOptions);
-		console.log("Email sent: " + info.response);
-		return info;
+		console.log("Verification email sent: %s", info.messageId);
+		return true;
 	} catch (error) {
-		console.error("Error sending email:", error);
+		console.error("Failed to send verification email:", error);
+		return false;
+	}
+}
+
+async function verifyEmailToken(token) {
+	try {
+		const query = `
+            UPDATE "user" 
+            SET is_verified = true, verification_token = NULL 
+            WHERE verification_token = $1 AND deleted_date IS NULL
+            RETURNING id, name, email, is_verified
+        `;
+
+		const result = await db.query(query, [token]);
+
+		if (result.rows.length === 0) {
+			throw new Error("Invalid verification token");
+		}
+
+		return result.rows[0];
+	} catch (error) {
+		console.error("Error during email verification:", error);
 		throw error;
 	}
-};
+}
 
 module.exports = {
 	sendVerificationEmail,
+	verifyEmailToken,
 };

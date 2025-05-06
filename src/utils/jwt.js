@@ -15,7 +15,7 @@ function generateToken(user) {
 		{
 			id: user.id,
 			email: user.email,
-			name: user.name,
+			name: user.username,
 			is_verified: user.is_verified,
 		},
 		JWT_SECRET,

@@ -7,7 +7,6 @@ const app = express();
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-// Access static files from assets directory
 app.use("/assets", express.static(path.join(__dirname, "../assets")));
 
 // Routes

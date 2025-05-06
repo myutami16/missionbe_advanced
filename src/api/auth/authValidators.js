@@ -1,7 +1,6 @@
 const validateRegistration = (req, res, next) => {
 	const { fullname, username, email, password, phone } = req.body;
 
-	// Check if all required fields are present
 	if ((!fullname, !username || !email || !password || !phone)) {
 		return res.status(400).json({
 			status: "error",
@@ -9,7 +8,6 @@ const validateRegistration = (req, res, next) => {
 		});
 	}
 
-	// Email validation
 	const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 	if (!emailRegex.test(email)) {
 		return res.status(400).json({
@@ -18,7 +16,6 @@ const validateRegistration = (req, res, next) => {
 		});
 	}
 
-	// Password strength validation (at least 6 characters)
 	if (password.length < 6) {
 		return res.status(400).json({
 			status: "error",
@@ -26,7 +23,6 @@ const validateRegistration = (req, res, next) => {
 		});
 	}
 
-	// If validation passes, proceed to the next middleware
 	next();
 };
 

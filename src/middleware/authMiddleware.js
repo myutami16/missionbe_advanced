@@ -1,6 +1,5 @@
 const { verifyToken } = require("../utils/jwt");
 
-// From authMiddleware.js:
 const verifyTokenMiddleware = async (req, res, next) => {
 	try {
 		const authHeader = req.headers.authorization;

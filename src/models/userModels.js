@@ -32,7 +32,6 @@ class User {
 	}
 
 	static async findByEmail(email) {
-		// Add explicit columns to ensure we're getting everything we need
 		const query = `
             SELECT 
                 id, 
@@ -51,7 +50,6 @@ class User {
 		try {
 			const result = await db.query(query, [email]);
 
-			// Debug: Log user verification status
 			if (result.rows[0]) {
 				console.log(
 					`User found: ${email}, is_verified: ${result.rows[0].is_verified}`

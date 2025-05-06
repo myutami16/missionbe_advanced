@@ -1,6 +1,5 @@
 const upload = require("../../middleware/uploadMiddleware");
 
-// Controller function to handle file uploads
 const uploadFile = (req, res) => {
 	upload(req, res, async (err) => {
 		try {
@@ -12,15 +11,12 @@ const uploadFile = (req, res) => {
 				return res.status(500).json({ error: err.message || String(err) });
 			}
 
-			// Check if any file was uploaded
 			if (!req.files || req.files.length === 0) {
 				return res.status(400).json({ error: "Please send a file" });
 			}
 
-			// Get the first uploaded file
 			const uploadedFile = req.files[0];
 
-			// Return success response
 			res.status(200).send({
 				msg: "File uploaded successfully",
 				filePath: `/assets/upload/${

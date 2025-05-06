@@ -11,13 +11,11 @@ const db = require("../../config/database");
 class authService {
 	static async register(userData) {
 		try {
-			// Check if the email already exists
 			const existingEmailUser = await User.findByEmail(userData.email);
 			if (existingEmailUser) {
 				throw new Error("Email already registered");
 			}
 
-			// Check if the username already exists
 			const existingUsernameUser = await db.query(
 				`SELECT * FROM "user" WHERE username = $1 AND deleted_date IS NULL`,
 				[userData.username]
@@ -26,21 +24,17 @@ class authService {
 				throw new Error("Username already exists");
 			}
 
-			// Hash the password
 			const salt = await bcrypt.genSalt(10);
 			const hashedPassword = await bcrypt.hash(userData.password, salt);
 
-			// Generate verification token
 			const verification_token = uuidv4();
 
-			// Create the new user
 			const newUser = await User.create({
 				...userData,
 				password: hashedPassword,
 				verification_token,
 			});
 
-			// Send the verification email asynchronously
 			try {
 				await Promise.race([
 					sendVerificationEmail(

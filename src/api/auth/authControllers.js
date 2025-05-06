@@ -65,16 +65,12 @@ class authController {
 		try {
 			const { email, password } = req.body;
 
-			// Debug: Log the email for troubleshooting
 			console.log("Login attempt for email:", email);
 
-			// Login user
 			const result = await authService.login(email, password);
 
-			// Debug: Log the result to see what's being returned
 			console.log("Login result:", JSON.stringify(result, null, 2));
 
-			// Success response - FIXED to use the correct properties
 			return res.status(200).json({
 				status: "success",
 				message: "Login successful",

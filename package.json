@@ -10,11 +10,13 @@
 		"uuid": "^11.1.0"
 	},
 	"devDependencies": {
+		"jest": "^29.7.0",
 		"morgan": "^1.10.0",
 		"nodemon": "^3.1.10"
 	},
 	"scripts": {
 		"start": "node src/server.js",
-		"dev": "nodemon src/server.js"
+		"dev": "nodemon src/server.js",
+		"test": "jest"
 	}
 }

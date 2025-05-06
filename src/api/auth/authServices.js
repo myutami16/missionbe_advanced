@@ -11,27 +11,41 @@ const db = require("../../config/database");
 class authService {
 	static async register(userData) {
 		try {
-			const existingUser = await User.findByEmail(userData.email);
-			if (existingUser) {
+			// Check if the email already exists
+			const existingEmailUser = await User.findByEmail(userData.email);
+			if (existingEmailUser) {
 				throw new Error("Email already registered");
 			}
 
+			// Check if the username already exists
+			const existingUsernameUser = await db.query(
+				`SELECT * FROM "user" WHERE username = $1 AND deleted_date IS NULL`,
+				[userData.username]
+			);
+			if (existingUsernameUser.rows.length > 0) {
+				throw new Error("Username already exists");
+			}
+
+			// Hash the password
 			const salt = await bcrypt.genSalt(10);
 			const hashedPassword = await bcrypt.hash(userData.password, salt);
 
+			// Generate verification token
 			const verification_token = uuidv4();
 
+			// Create the new user
 			const newUser = await User.create({
 				...userData,
 				password: hashedPassword,
 				verification_token,
 			});
 
+			// Send the verification email asynchronously
 			try {
 				await Promise.race([
 					sendVerificationEmail(
 						userData.email,
-						userData.name,
+						userData.username,
 						verification_token
 					),
 					new Promise((_, reject) =>
@@ -69,7 +83,7 @@ class authService {
 		return {
 			user: {
 				id: user.id,
-				name: user.name,
+				username: user.username,
 				email: user.email,
 				is_verified: user.is_verified,
 			},
@@ -99,7 +113,7 @@ class authService {
 				UPDATE "user" 
 				SET verification_token = $1 
 				WHERE email = $2 AND deleted_date IS NULL
-				RETURNING id, name, email
+				RETURNING id, username, email
 			`;
 
 			const result = await db.query(query, [verification_token, email]);
@@ -108,7 +122,11 @@ class authService {
 				throw new Error("Failed to update verification token");
 			}
 
-			await sendVerificationEmail(user.email, user.name, verification_token);
+			await sendVerificationEmail(
+				user.email,
+				user.username,
+				verification_token
+			);
 
 			return result.rows[0];
 		} catch (error) {

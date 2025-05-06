@@ -1,12 +1,11 @@
-// src/api/auth/authValidators.js
 const validateRegistration = (req, res, next) => {
-	const { name, email, password, phone } = req.body;
+	const { fullname, username, email, password, phone } = req.body;
 
 	// Check if all required fields are present
-	if (!name || !email || !password || !phone) {
+	if ((!fullname, !username || !email || !password || !phone)) {
 		return res.status(400).json({
 			status: "error",
-			message: "All fields are required: name, email, password, phone",
+			message: "All fields are required: username, email, password, phone",
 		});
 	}
 

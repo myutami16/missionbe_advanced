@@ -2,7 +2,7 @@ const nodemailer = require("nodemailer");
 const db = require("../config/database");
 require("dotenv").config();
 
-async function sendVerificationEmail(email, name, token) {
+async function sendVerificationEmail(email, username, token) {
 	const transporter = nodemailer.createTransport({
 		service: "gmail",
 		auth: {
@@ -45,7 +45,7 @@ async function sendVerificationEmail(email, name, token) {
             <body>
                 <div class="container">
                     <h2>Email Verification</h2>
-                    <p>Hello ${name},</p>
+                    <p>Hello ${username},</p>
                     <p>Thank you for registering! Please click the button below to verify your email address:</p>
                     <a href="${verificationUrl}" class="button">Verify Email</a>
                     <p>If you didn't create an account, you can safely ignore this email.</p>
@@ -72,7 +72,7 @@ async function verifyEmailToken(token) {
             UPDATE "user" 
             SET is_verified = true, verification_token = NULL 
             WHERE verification_token = $1 AND deleted_date IS NULL
-            RETURNING id, name, email, is_verified
+            RETURNING id, username, email, is_verified
         `;
 
 		const result = await db.query(query, [token]);

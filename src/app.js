@@ -7,12 +7,13 @@ const app = express();
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-//mengakses file statis dari direktori uploads
-app.use("/uploads", express.static(path.join(__dirname, "../uploads")));
+// Access static files from assets directory
+app.use("/assets", express.static(path.join(__dirname, "../assets")));
 
 // Routes
 app.use("/api/auth", require("./api/auth/authRoutes"));
 app.use("/api/movies", require("./api/movie/movieRoutes"));
+app.use("/api/upload", require("./api/uploads/uploadRoutes")); // Added upload route
 
 app.get("/", (req, res) => {
 	res.send("API is running...");

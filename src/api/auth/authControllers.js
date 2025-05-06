@@ -3,17 +3,24 @@ const authService = require("./authServices");
 class authController {
 	static async register(req, res) {
 		try {
-			const { name, email, password, phone } = req.body;
+			const { fullname, username, email, password, phone } = req.body;
 
-			// register user
+			if (!fullname || !username || !email || !password || !phone) {
+				return res.status(400).json({
+					status: "error",
+					message:
+						"All fields are required: fullname, username, email, password, phone",
+				});
+			}
+
 			const result = await authService.register({
-				name,
+				fullname,
+				username,
 				email,
 				password,
 				phone,
 			});
 
-			// success response
 			return res.status(201).json({
 				status: "success",
 				message:
@@ -39,6 +46,13 @@ class authController {
 				});
 			}
 
+			if (error.message === "Username already exists") {
+				return res.status(409).json({
+					status: "error",
+					message: "Username already exists",
+				});
+			}
+
 			return res.status(500).json({
 				status: "error",
 				message: "An error occurred during registration",
@@ -51,15 +65,26 @@ class authController {
 		try {
 			const { email, password } = req.body;
 
+			// Debug: Log the email for troubleshooting
+			console.log("Login attempt for email:", email);
+
 			// Login user
 			const result = await authService.login(email, password);
 
-			// Success response
+			// Debug: Log the result to see what's being returned
+			console.log("Login result:", JSON.stringify(result, null, 2));
+
+			// Success response - FIXED to use the correct properties
 			return res.status(200).json({
 				status: "success",
 				message: "Login successful",
 				data: {
-					user: result.user,
+					user: {
+						id: result.user.id,
+						username: result.user.username,
+						email: result.user.email,
+						is_verified: result.user.is_verified,
+					},
 					token: result.token,
 				},
 			});
@@ -100,7 +125,7 @@ class authController {
 				data: {
 					user: {
 						id: user.id,
-						name: user.name,
+						name: user.username,
 						email: user.email,
 						is_verified: user.is_verified,
 					},
@@ -123,6 +148,7 @@ class authController {
 			});
 		}
 	}
+
 	static async resendVerificationEmail(req, res) {
 		try {
 			const { email } = req.body;

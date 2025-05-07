@@ -11,5 +11,5 @@ JWT_EXPIRES_IN=24h
 
 BASE_URL=http://localhost:3000/api/auth
 
-GOOGLE_APP_EMAIL=your_email@example.com
+GOOGLE_APP_EMAIL=your_email@gmail.com
 GOOGLE_APP_PASSWORD=your_google_app_password
